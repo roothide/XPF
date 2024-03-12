@@ -1,5 +1,7 @@
 .DS_Store
+.idea
 xpf_test_macos
 xpf_test_ios
 libxpf.dylib
 libxpf_macos.dylib
+*.dSYM
