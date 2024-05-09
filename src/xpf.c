@@ -25,6 +25,11 @@ bool xpf_supported_16up(void) {
     return strcmp(gXPF.darwinVersion, "22.0.0") >= 0;
 }
 
+bool xpf_supported_arm64(void)
+{
+	return !gXPF.kernelIsArm64e;
+}
+
 XPFSet gBaseSet = {
         .name="base",
         .supported=xpf_supported_always,
@@ -54,20 +59,22 @@ XPFSet gTranslationSet = {
 };
 
 XPFSet gPhysmapSet = {
-        .name="physmap",
-        .supported=xpf_supported_always,
-        .metrics={
-                "kernelSymbol.vm_page_array_beginning_addr",
-                "kernelSymbol.vm_page_array_ending_addr",
-                "kernelSymbol.vm_first_phys_ppnum",
-                "kernelSymbol.vm_first_phys",
-                "kernelSymbol.vm_last_phys",
-                "kernelSymbol.pp_attr_table",
-                "kernelSymbol.pv_head_table",
-                "kernelSymbol.ptov_table",
-                "kernelConstant.PT_INDEX_MAX",
-                NULL
-        }
+	.name="physmap",
+	.supported=xpf_supported_always,
+	.metrics={
+		"kernelSymbol.vm_page_array_beginning_addr",
+		"kernelSymbol.vm_page_array_ending_addr",
+		"kernelSymbol.vm_first_phys_ppnum",
+		"kernelSymbol.vm_first_phys",
+		"kernelSymbol.vm_last_phys",
+		"kernelSymbol.pp_attr_table",
+		"kernelSymbol.pv_head_table",
+		"kernelSymbol.ptov_table",
+		"kernelConstant.PT_INDEX_MAX",
+		"kernelSymbol.pmap_enter_options_addr",
+		"kernelSymbol.pmap_remove_options",
+		NULL
+	}
 };
 
 XPFSet gStructSet = {
@@ -173,19 +180,34 @@ XPFSet gNameCacheSet = {
         },
 };
 
+XPFSet gArm64KcallSet = {
+	.name="arm64kcall",
+	.supported=xpf_supported_arm64,
+	.metrics={
+		"kernelSymbol.exception_return",
+		"kernelGadget.kcall_return",
+		"kernelGadget.str_x8_x0",
+		"kernelStruct.thread.machine_CpuDatap",
+		"kernelStruct.thread.machine_kstackptr",
+		"kernelStruct.thread.machine_contextData",
+		NULL
+	},
+};
+
 XPFSet *gSets[] = {
-        &gBaseSet,
-        &gTranslationSet,
-        &gSandboxSet,
-        &gPhysmapSet,
-        &gStructSet,
-        &gTrustcache15Set,
-        &gTrustcache16Set,
-        &gBadRecoverySet,
-        &gPhysRWSet,
-        &gPerfKRWSet,
-        &gDevModeSet,
-        &gNameCacheSet,
+    &gNameCacheSet,
+	&gBaseSet,
+	&gTranslationSet,
+	&gSandboxSet,
+	&gPhysmapSet,
+	&gStructSet,
+	&gTrustcache15Set,
+	&gTrustcache16Set,
+	&gBadRecoverySet,
+	&gPhysRWSet,
+	&gPerfKRWSet,
+	&gDevModeSet,
+	&gArm64KcallSet,
 };
 
 XPF gXPF = {0};

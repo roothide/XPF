@@ -14,27 +14,31 @@ int main(int argc, char *argv[]) {
             printf("Kernel entry: 0x%llx\n", gXPF.kernelEntry);
             //xpf_print_all_items();
 
-            char *sets[] = {
-                    "translation",
-                    "trustcache",
-                    "sandbox",
-                    "physmap",
-                    "struct",
-                    "physrw",
-                    "perfkrw",
-                    "namecache",
-                    NULL,
-                    NULL,
-                    NULL,
-            };
+			char *sets[] = {
+				"namecache",
+				"translation",
+				"trustcache",
+				"sandbox",
+				"physmap",
+				"struct",
+				"physrw",
+				"perfkrw",
+				NULL,
+				NULL,
+				NULL,
+				NULL,
+			};
 
-            uint32_t idx = 8;
-            if (xpf_set_is_supported("devmode")) {
-                sets[idx++] = "devmode";
-            }
-            if (xpf_set_is_supported("badRecovery")) {
-                sets[idx++] = "badRecovery";
-            }
+			uint32_t idx = 7;
+			if (xpf_set_is_supported("devmode")) {
+				sets[idx++] = "devmode"; 
+			}
+			if (xpf_set_is_supported("badRecovery")) {
+				sets[idx++] = "badRecovery"; 
+			}
+			if (xpf_set_is_supported("arm64kcall")) {
+				sets[idx++] = "arm64kcall"; 
+			}
 
             xpc_object_t serializedSystemInfo = xpf_construct_offset_dictionary((const char **) sets);
             if (serializedSystemInfo) {
