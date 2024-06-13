@@ -187,7 +187,18 @@ XPFSet gArm64KcallSet = {
 	},
 };
 
+XPFSet gNameCacheSet = {
+        .name="namecache",
+        .supported=xpf_supported_always,
+        .metrics={
+                "kernelConstant.nchashtbl",
+                "kernelConstant.nchashmask",
+                NULL
+        },
+};
+
 XPFSet *gSets[] = {
+	&gNameCacheSet,
 	&gBaseSet,
 	&gTranslationSet,
 	&gSandboxSet,

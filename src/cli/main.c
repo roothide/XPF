@@ -16,6 +16,7 @@ int main(int argc, char *argv[]) {
 			//xpf_print_all_items();
 
 			char *sets[] = {
+				"namecache",
 				"translation",
 				"trustcache",
 				"sandbox",
