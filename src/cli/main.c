@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[]) {
 	if (argc == 1) {
-
+		printf("Usage: %s /path/to/kernelcache\n", getprogname());
 	}
 	else {
 		if (xpf_start_with_kernel_path(argv[1]) == 0) {
@@ -28,9 +28,16 @@ int main(int argc, char *argv[]) {
 				NULL,
 				NULL,
 				NULL,
+				NULL,
 			};
 
-			uint32_t idx = 7;
+			uint64_t idx = -1;
+			for(int i=0;sets[i];i++) idx=i+1;
+
+			if (xpf_set_is_supported("amfi_oids")) {
+				sets[idx++] = "amfi_oids";
+			}
+
 			if (xpf_set_is_supported("devmode")) {
 				sets[idx++] = "devmode"; 
 			}

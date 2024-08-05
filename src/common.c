@@ -1080,6 +1080,11 @@ uint64_t xpf_find_namecache(uint32_t n) {
     });
     pfmetric_free(metric);
 
+	if(!crcFlag) {
+		xpf_set_error("Failed to find crcFlag");
+		return 0;
+	}
+
     // BL _hashinit BD 2D 0B 94
     uint32_t blAnyInst = 0, blAnyMask = 0;
     arm64_gen_b_l(OPT_BOOL(true), OPT_UINT64_NONE, OPT_UINT64_NONE, &blAnyInst, &blAnyMask);
@@ -1124,6 +1129,11 @@ uint64_t xpf_find_namecache(uint32_t n) {
                           });
     pfmetric_free(metric);
 
+	if(!nchashtbl || !nchashmask)  {
+		xpf_set_error("Failed to find nchash");
+		return 0;
+	}
+
     if (n == 1) {
         return nchashtbl;
     } else {
@@ -1131,10 +1141,72 @@ uint64_t xpf_find_namecache(uint32_t n) {
     }
 }
 
+uint64_t xpf_find_amfi_oid(int index)
+{
+	const char* oid_name = NULL;
+	const char* oid_descr = NULL;
+
+	if(index==2) {
+		oid_name = "developer_mode_status";
+		oid_descr = "developer mode status";
+	} else if(index==1) {
+		oid_name = "launch_env_logging";
+		oid_descr = "launch environment logging";
+	} else {
+		abort();
+	}
+
+	__block uint64_t oid_descr_addr = 0;
+	PFStringMetric* oid_descr_metric = pfmetric_string_init(oid_descr);
+	pfmetric_run(gXPF.kernelAMFIStringSection, oid_descr_metric, ^(uint64_t vmaddr, bool *stop) {
+		oid_descr_addr = vmaddr;
+		*stop = true;
+	});
+	pfmetric_free(oid_descr_metric);
+
+	if(!oid_descr_addr) {
+		xpf_set_error("Failed to find oid_descr_addr");
+		return 0;
+	}
+
+	__block uint64_t oid_descr_ptr = 0;
+	PFXrefMetric *oid_descr_ptr_metric = pfmetric_xref_init(oid_descr_addr, XREF_TYPE_MASK_POINTER);
+	pfmetric_run(gXPF.kernelAMFIDataSection, oid_descr_ptr_metric, ^(uint64_t vmaddr, bool *stop) {
+		oid_descr_ptr = vmaddr;
+		*stop = true;
+	});
+	pfmetric_free(oid_descr_ptr_metric);
+
+	if(!oid_descr_ptr)  {
+		xpf_set_error("Failed to find oid_descr_ptr");
+		return 0;
+	}
+
+	uint64_t oid_name_ptr = oid_descr_ptr - 0x18;
+	
+	uint64_t oid_name_addr = pfsec_read_pointer(gXPF.kernelAMFIDataSection, oid_name_ptr);
+	if(!oid_name_addr) {
+		xpf_set_error("invalid oid_name_ptr");
+		return 0;
+	}
+
+	char* oid_name_string = NULL;
+	int r = pfsec_read_string(gXPF.kernelAMFIStringSection, oid_name_addr, &oid_name_string);
+	if(!oid_name_string || strcmp(oid_name_string, oid_name) != 0) {
+		xpf_set_error("Mismatch oid_name and oid_descr");
+		return 0;
+	}
+
+	return oid_name_ptr;
+}
+
 void xpf_common_init(void)
 {
-	xpf_item_register("kernelConstant.nchashtbl", xpf_find_namecache, (void *) (uint32_t) 1);
-	xpf_item_register("kernelConstant.nchashmask", xpf_find_namecache, (void *) (uint32_t) 2);
+	xpf_item_register("kernelSymbol.launch_env_logging", xpf_find_amfi_oid, (void *) (int)1);
+	xpf_item_register("kernelSymbol.developer_mode_status", xpf_find_amfi_oid, (void *) (int)2);
+
+	xpf_item_register("kernelSymbol.nchashtbl", xpf_find_namecache, (void *) (uint32_t) 1);
+	xpf_item_register("kernelSymbol.nchashmask", xpf_find_namecache, (void *) (uint32_t) 2);
 
 	xpf_item_register("kernelSymbol.start_first_cpu", xpf_find_start_first_cpu, NULL);
 	xpf_item_register("kernelConstant.kernel_el", xpf_find_kernel_el, NULL);
