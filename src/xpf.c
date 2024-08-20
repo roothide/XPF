@@ -308,6 +308,7 @@ int xpf_start_with_kernel_path(const char *kernelPath)
 	}
 	else {
 		gXPF.kernelPrelinkTextSection = xpf_pfsec_init(NULL, "__PRELINK_TEXT", "__text");
+		gXPF.kernelPrelinkDataSection = xpf_pfsec_init(NULL, "__PRELINK_DATA", "__data");
 		gXPF.kernelPLKTextSection = xpf_pfsec_init(NULL, "__PLK_TEXT_EXEC", "__text");
 	}
 

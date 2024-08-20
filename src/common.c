@@ -1156,9 +1156,16 @@ uint64_t xpf_find_amfi_oid(int index)
 		abort();
 	}
 
+	PFSection *dataSec = (gXPF.kernelAMFIDataSection ?: gXPF.kernelDataSection);
+	PFSection *stringSec = (gXPF.kernelAMFIStringSection ?: gXPF.kernelStringSection);
+	if (!gXPF.kernelIsArm64e && !gXPF.kernelIsFileset) {
+		dataSec = gXPF.kernelPrelinkDataSection;
+		stringSec = gXPF.kernelPrelinkTextSection;
+	}
+
 	__block uint64_t oid_descr_addr = 0;
 	PFStringMetric* oid_descr_metric = pfmetric_string_init(oid_descr);
-	pfmetric_run(gXPF.kernelAMFIStringSection, oid_descr_metric, ^(uint64_t vmaddr, bool *stop) {
+	pfmetric_run(stringSec, oid_descr_metric, ^(uint64_t vmaddr, bool *stop) {
 		oid_descr_addr = vmaddr;
 		*stop = true;
 	});
@@ -1171,7 +1178,7 @@ uint64_t xpf_find_amfi_oid(int index)
 
 	__block uint64_t oid_descr_ptr = 0;
 	PFXrefMetric *oid_descr_ptr_metric = pfmetric_xref_init(oid_descr_addr, XREF_TYPE_MASK_POINTER);
-	pfmetric_run(gXPF.kernelAMFIDataSection, oid_descr_ptr_metric, ^(uint64_t vmaddr, bool *stop) {
+	pfmetric_run(dataSec, oid_descr_ptr_metric, ^(uint64_t vmaddr, bool *stop) {
 		oid_descr_ptr = vmaddr;
 		*stop = true;
 	});
@@ -1184,14 +1191,14 @@ uint64_t xpf_find_amfi_oid(int index)
 
 	uint64_t oid_name_ptr = oid_descr_ptr - 0x18;
 	
-	uint64_t oid_name_addr = pfsec_read_pointer(gXPF.kernelAMFIDataSection, oid_name_ptr);
+	uint64_t oid_name_addr = pfsec_read_pointer(dataSec, oid_name_ptr);
 	if(!oid_name_addr) {
 		xpf_set_error("invalid oid_name_ptr");
 		return 0;
 	}
 
 	char* oid_name_string = NULL;
-	int r = pfsec_read_string(gXPF.kernelAMFIStringSection, oid_name_addr, &oid_name_string);
+	int r = pfsec_read_string(stringSec, oid_name_addr, &oid_name_string);
 	if(!oid_name_string || strcmp(oid_name_string, oid_name) != 0) {
 		xpf_set_error("Mismatch oid_name and oid_descr");
 		return 0;
