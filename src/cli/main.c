@@ -15,8 +15,7 @@ int main(int argc, char *argv[]) {
 			printf("Kernel entry: 0x%llx\n", gXPF.kernelEntry);
 			//xpf_print_all_items();
 
-			char *sets[] = {
-				"namecache",
+			char *sets[99] = {
 				"translation",
 				"trustcache",
 				"sandbox",
@@ -28,11 +27,11 @@ int main(int argc, char *argv[]) {
 				NULL,
 				NULL,
 				NULL,
-				NULL,
 			};
 
-			uint64_t idx = -1;
-			for(int i=0;sets[i];i++) idx=i+1;
+			uint32_t idx = 7;
+
+			sets[idx++] = "namecache";
 
 			if (xpf_set_is_supported("amfi_oids")) {
 				sets[idx++] = "amfi_oids";
