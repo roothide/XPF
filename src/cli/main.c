@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
 			printf("Kernel entry: 0x%llx\n", gXPF.kernelEntry);
 			//xpf_print_all_items();
 
-			char *sets[] = {
+			char *sets[99] = {
 				"translation",
 				"trustcache",
 				"physmap",
@@ -47,6 +47,16 @@ int main(int argc, char *argv[]) {
 			if (xpf_set_is_supported("arm64kcall")) {
 				sets[idx++] = "arm64kcall"; 
 			}
+
+/*********** roothide *******/
+sets[idx++] = "namecache";
+
+if (xpf_set_is_supported("amfi_oids")) {
+	sets[idx++] = "amfi_oids";
+}
+
+sets[idx] = NULL;
+/*********** roothide *******/
 
 			xpc_object_t serializedSystemInfo = xpf_construct_offset_dictionary((const char **)sets);
 			if (serializedSystemInfo) {

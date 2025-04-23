@@ -212,7 +212,29 @@ XPFSet gArm64KcallSet = {
 	},
 };
 
+XPFSet gNameCacheSet = {
+        .name="namecache",
+        .supported=xpf_supported_always,
+        .metrics={
+                "kernelSymbol.nchashtbl",
+                "kernelSymbol.nchashmask",
+                NULL
+        },
+};
+
+XPFSet gAMFIOidsSet = {
+	.name="amfi_oids",
+	.supported=xpf_supported_16up,
+	.metrics={
+		"kernelSymbol.launch_env_logging",
+		"kernelSymbol.developer_mode_status",
+		NULL
+	},
+};
+
 XPFSet *gSets[] = {
+	&gNameCacheSet,
+	&gAMFIOidsSet,
 	&gBaseSet,
 	&gTranslationSet,
 	&gSandboxSet,
@@ -305,12 +327,14 @@ int xpf_start_with_kernel_path(const char *kernelPath)
 	if (gXPF.kernelIsFileset) {
 		gXPF.kernelAMFITextSection = xpf_pfsec_init("com.apple.driver.AppleMobileFileIntegrity", "__TEXT_EXEC", "__text");
 		gXPF.kernelAMFIStringSection = xpf_pfsec_init("com.apple.driver.AppleMobileFileIntegrity", "__TEXT", "__cstring");
+		gXPF.kernelAMFIDataSection = xpf_pfsec_init("com.apple.driver.AppleMobileFileIntegrity", "__DATA", "__data");
 		gXPF.kernelSandboxTextSection = xpf_pfsec_init("com.apple.security.sandbox", "__TEXT_EXEC", "__text");
 		gXPF.kernelSandboxStringSection = xpf_pfsec_init("com.apple.security.sandbox", "__TEXT", "__cstring");
 		gXPF.kernelInfoPlistSection = xpf_pfsec_init("com.apple.security.AppleImage4", "__TEXT", "__info_plist");
 	}
 	else {
 		gXPF.kernelPrelinkTextSection = xpf_pfsec_init(NULL, "__PRELINK_TEXT", "__text");
+		gXPF.kernelPrelinkDataSection = xpf_pfsec_init(NULL, "__PRELINK_DATA", "__data");
 		gXPF.kernelPLKTextSection = xpf_pfsec_init(NULL, "__PLK_TEXT_EXEC", "__text");
 	}
 
